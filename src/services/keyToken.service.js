@@ -10,6 +10,7 @@ class keyTokenService{
                 publicKey: publicKeyString
             })
 
+            
             return token ? publicKeyString : null
         }catch(error){
             return error
