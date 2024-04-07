@@ -1,5 +1,6 @@
 
 const JWT = require('jsonwebtoken')
+
 const createTokenPair = async (payload, publicKey, privateKey) =>{
     try{
         //accessToken

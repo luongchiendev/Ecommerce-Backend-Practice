@@ -1,7 +1,9 @@
 const shopModel = require('../models/shop.model');
 const bcrypt = require('bcrypt');
-const keyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
+const crypto = require('crypto');
+const { generateKeyPairSync } = require('crypto');
+const keyTokenService = require('./keyToken.service'); // Import keyTokenService
 const ROLESHOP = {
     SHOP: 'SHOP',
     WRITER: 'WRITER',
@@ -29,24 +31,61 @@ class AccessService {
             });
 
             // Error handling for creating newShop
-            if (!newShop) {
-                return {
-                    code: 500, // Internal Server Error
-                    message: 'Failed to create new shop'
-                };
-            }
+            if (newShop) {
+                const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+                    modulusLength: 4096,
+                    publicKeyEncoding: {
+                        type: 'pkcs1',
+                        format: 'pem'
+                    },
+                    privateKeyEncoding: {
+                        type: 'pkcs1',
+                        format: 'pem'
+                    }
+                });
 
-            // Return success response
-            return {
-                code: 201, // Created
-                metadata: {
-                    shop: newShop
+                console.log({ privateKey, publicKey }); // Save collection KeyStore
+
+                const publicKeyString = await keyTokenService.createKeyToken({ // Call createKeyToken from keyTokenService
+                    userId: newShop._id,
+                    publicKey
+                });
+
+                if (!publicKeyString) {
+                    return {
+                        code: "XXXX",
+                        message: 'publicKeyString error'
+                    }
                 }
-            };
+                const publicKeyObject = crypto.createPublicKey(publicKeyString);
+
+                console.log(`publicKeyObject::`, publicKeyObject);
+
+                const tokens = await createTokenPair({ userId: newShop._id, email }, publicKeyString, privateKey); // Fix typo
+
+                console.log(`Created Token Success:: `, tokens);
+                // Return success response
+                return {
+                    code: 201, // Created
+                    metadata: {
+                        shop: {
+                            _id : newShop._id,
+                            name: newShop.name,
+                            email: newShop.email
+                        },
+                        tokens
+                    }
+                }
+            }
+            return {
+                code: "200",
+                metadata: null
+            }
         } catch (error) {
             return {
-                code: 500,
-                message: error.message
+                code: 'xxx',
+                message: error.message,
+                status: 'error'
             };
         }
     }
