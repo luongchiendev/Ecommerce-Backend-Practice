@@ -11,6 +11,15 @@ class AccessController{
         }
     }
 
+    logIn = async (req, res, next) =>{
+        try{
+            console.log(`[P]LogIn::: `, req.body)
+            return res.status(201).json(await AccesService.logIn(req.body))
+        }catch(error){
+            next(error)
+        }
+    }
+
     
 
 }

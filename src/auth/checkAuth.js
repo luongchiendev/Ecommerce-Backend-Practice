@@ -8,6 +8,8 @@ const {findById} = require('../services/apiKey.service')
 
 const apiKey = async (req, res, next) => {
     try{
+            
+            
             const key = req.headers[HEADER.API_KEY]?.toString()
             if(!key){
                 return res.status(403).json({
