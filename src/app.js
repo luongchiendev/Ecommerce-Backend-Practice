@@ -4,9 +4,11 @@ const compression = require('compression');
 const express = require("express");
 const { default: helmet } = require("helmet");
 const morgan = require("morgan");
+const cors = require('cors')
 const app = express();
 
 //init middleware
+app.use(cors());
 app.use(morgan("dev"));
 app.use(compression());
 app.use(helmet());
@@ -24,4 +26,4 @@ app.use('/', require('./routes'))
 //handling errors
 
 
-module.exports=app;
+module.exports = app;
