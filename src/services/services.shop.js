@@ -4,7 +4,8 @@ const { createTokenPair } = require('../auth/authUtils');
 const crypto = require('crypto');
 const { generateKeyPairSync } = require('crypto');
 const keyTokenService = require('./keyToken.service'); // Import keyTokenService
-const { findByEmail } = require('../utils/findEmail')
+const { findByEmail } = require('../utils/findEmail');
+const { sendVerificationEmail } = require('../utils/sendVerifyEmail');
 const ROLESHOP = {
     SHOP: 'SHOP',
     WRITER: 'WRITER',
@@ -13,6 +14,8 @@ const ROLESHOP = {
 }
 
 class AccessService {
+
+
     /*
     -------Login Service------
     1. Check Email
@@ -51,7 +54,7 @@ class AccessService {
                         name: foundShop.name,
                         email: foundShop.email
                     },
-
+                    tokens
                 }
             }
         } catch (error) {
@@ -65,11 +68,12 @@ class AccessService {
 
     static signUp = async ({ name, email, password }) => {
         try {
-            const holderShop = await shopModel.findOne({ email }).lean();
+            const holderShop = await shopModel.findOne({ email });
             if (holderShop) {
                 return {
                     code: 202,
                     message: 'Shop already registered!'
+
                 };
             }
 
@@ -83,39 +87,36 @@ class AccessService {
 
             // Error handling for creating newShop
             if (newShop) {
-                const { privateKey, publicKey } = generateKeyPairSync('rsa', {
-                    modulusLength: 4096,
-                    publicKeyEncoding: {
-                        type: 'pkcs1',
-                        format: 'pem'
-                    },
-                    privateKeyEncoding: {
-                        type: 'pkcs1',
-                        format: 'pem'
-                    }
-                });
+                const privateKey = crypto.randomBytes(64).toString('hex')
+                const publicKey = crypto.randomBytes(64).toString('hex')
+
 
                 console.log({ privateKey, publicKey }); // Save collection KeyStore
 
-                const publicKeyString = await keyTokenService.createKeyToken({ // Call createKeyToken from keyTokenService
+                const keyStore = await keyTokenService.createKeyToken({ // Call createKeyToken from keyTokenService
                     userId: newShop._id,
-                    publicKey
+                    publicKey,
+                    privateKey
                 });
 
-                if (!publicKeyString) {
+                if (!keyStore) {
                     return {
                         code: "XXXX",
                         message: 'publicKeyString error'
                     }
                 }
-                const publicKeyObject = crypto.createPublicKey(publicKeyString);
 
-                console.log(`publicKeyObject::`, publicKeyObject);
-
-                const tokens = await createTokenPair({ userId: newShop._id, email }, publicKeyString, privateKey); // Fix typo
+                const tokens = await createTokenPair({ userId: newShop._id, email }, keyStore, privateKey); // Fix typo
 
                 console.log(`Created Token Success:: `, tokens);
-
+                //Send email 
+                const MailSended = await sendVerificationEmail(email);
+                if (MailSended) {
+                    return {
+                        code: 200,
+                        message: "Send mail verify!"
+                    }
+                }
                 // Return success response
                 return {
                     code: 201, // Created
@@ -130,7 +131,7 @@ class AccessService {
                 }
             }
             return {
-                code: "200",
+                code: "202",
                 metadata: null
             }
         } catch (error) {
