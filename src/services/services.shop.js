@@ -6,6 +6,7 @@ const { generateKeyPairSync } = require('crypto');
 const keyTokenService = require('./keyToken.service'); // Import keyTokenService
 const { findByEmail } = require('../utils/findEmail');
 const { sendVerificationEmail } = require('../utils/sendVerifyEmail');
+
 const ROLESHOP = {
     SHOP: 'SHOP',
     WRITER: 'WRITER',
@@ -14,6 +15,7 @@ const ROLESHOP = {
 }
 
 class AccessService {
+
 
 
     /*
@@ -34,29 +36,37 @@ class AccessService {
             //2.check match password
             const passwordMatch = await bcrypt.compare(password, foundShop.password)
             if (!passwordMatch) throw new Error('Password not match!')
-            //3. create AT và RT
-            const publicKey = crypto.randomBytes(64).toString('hex')
-            const privateKey = crypto.randomBytes(64).toString('hex')
-            //4.generate token
-            const tokens = await createTokenPair({ userId: foundShop._id, email }, publicKey, privateKey)
-            //5.get data return to login
-            await keyTokenService.createKeyToken({
-                userId: foundShop,
-                refreshToken: tokens.refreshToken,
-                privateKey, publicKey
-            })
 
-            return {
-                code: 201, // Created
-                metadata: {
-                    foundShop: {
-                        _id: foundShop._id,
-                        name: foundShop.name,
-                        email: foundShop.email
-                    },
-                    tokens
+            const isVerified = await shopModel.findOne({ verify: true })
+            if (isVerified) {
+                //3. create AT và RT
+                const publicKey = crypto.randomBytes(64).toString('hex')
+                const privateKey = crypto.randomBytes(64).toString('hex')
+                //4.generate token
+                const tokens = await createTokenPair({ userId: foundShop._id, email }, publicKey, privateKey)
+                //5.get data return to login
+                await keyTokenService.createKeyToken({
+                    userId: foundShop,
+                    refreshToken: tokens.refreshToken,
+                    privateKey, publicKey
+                })
+
+                return {
+                    code: 201, // Created
+                    metadata: {
+                        foundShop: {
+                            _id: foundShop._id,
+                            name: foundShop.name,
+                            email: foundShop.email,
+                            isVerified: foundShop.verify
+                        },
+                        tokens,
+
+                    }
                 }
             }
+
+
         } catch (error) {
             console.log("error", error.message)
         }
@@ -110,6 +120,7 @@ class AccessService {
 
                 console.log(`Created Token Success:: `, tokens);
                 //Send email 
+
                 const MailSended = await sendVerificationEmail(email);
                 if (MailSended) {
                     return {
@@ -143,4 +154,5 @@ class AccessService {
         }
     }
 }
+
 module.exports = AccessService;

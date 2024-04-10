@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const { google } = require("googleapis");
 const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken')
 
 // Hàm gửi email xác thực
 const sendVerificationEmail = async (repicientMail) => {
@@ -18,6 +19,7 @@ const sendVerificationEmail = async (repicientMail) => {
         const myAccessTokenObject = await myOAuth2Client.getAccessToken();
         const myAccessToken = myAccessTokenObject?.token;
 
+        const verifyToken = jwt.sign({ email: repicientMail }, process.env.EMAIL_VERIFICATION_SECRET, { expiresIn: '1h' });
         // Tạo transporter để gửi email
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -37,7 +39,8 @@ const sendVerificationEmail = async (repicientMail) => {
             from: process.env.USER,
             to: repicientMail,
             subject: 'Account Verification Link',
-            text: 'Hello'
+            html: `Thank for regsiter our service. Please click link below to verify your account for user!
+            <a href="http://localhost:3056/v1/api/shop/verify?token=${verifyToken}">http://localhost:3056/v1/api/shop/verify?token=${verifyToken}</a>`
         };
 
         // Gửi email

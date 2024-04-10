@@ -8,4 +8,5 @@ const router = express.Router()
 // signUp
 router.post('/shop/signup', accessController.signUp)
 router.post('/shop/login', accessController.logIn)
+router.get('/shop/verify', accessController.verify)
 module.exports = router
