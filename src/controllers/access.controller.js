@@ -125,7 +125,7 @@ class AccessController {
             }
             const response = await AccesService.logIn(req.body)
             const { refresh_token, ...newReponse } = response
-            console.log(response.email)
+
             res.cookie('refresh_token', refresh_token, {
                 httpOnly: true,
                 secure: false,

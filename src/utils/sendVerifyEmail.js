@@ -40,7 +40,7 @@ const sendVerificationEmail = async (repicientMail) => {
             to: repicientMail,
             subject: 'Account Verification Link',
             html: `Thank for regsiter our service. Please click link below to verify your account for user!
-            <a href="http://localhost:3056/v1/api/shop/verify?token=${verifyToken}">http://localhost:3056/v1/api/shop/verify?token=${verifyToken}</a>`
+            <a href="${process.env.MAIN_HOST}/v1/api/shop/verify?token=${verifyToken}">Verify Email Here</a>`
         };
 
         // Gửi email

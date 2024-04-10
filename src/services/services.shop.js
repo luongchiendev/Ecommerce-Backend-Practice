@@ -2,7 +2,6 @@ const shopModel = require('../models/shop.model');
 const bcrypt = require('bcrypt');
 const { createTokenPair } = require('../auth/authUtils');
 const crypto = require('crypto');
-const { generateKeyPairSync } = require('crypto');
 const keyTokenService = require('./keyToken.service'); // Import keyTokenService
 const { findByEmail } = require('../utils/findEmail');
 const { sendVerificationEmail } = require('../utils/sendVerifyEmail');
