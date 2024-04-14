@@ -1,11 +1,26 @@
-'use strict'
+const express = require('express');
+const router = express.Router();
+const ProductController = require('../../controllers/product.controller');
 
-const express = require('express')
+// Tạo sản phẩm mới
+router.post('/products/create', ProductController.createProduct);
 
-const productController = require('../../controllers/product.controller')
-const router = express.Router()
+// Cập nhật sản phẩm
+router.put('/products/update/:id', ProductController.updateProduct);
 
-// signUp
-router.post('/product/create', productController.createProduct)
+// Xoá sản phẩm
+router.delete('/products/delete/:id', ProductController.deleteProduct);
 
-module.exports = router
+// Lấy sản phẩm theo ID
+router.get('/products/:id', ProductController.getProductById);
+
+// Lấy danh sách sản phẩm
+router.get('/product/getall', ProductController.getAllProduct);
+
+// Tìm kiếm sản phẩm
+router.get('/products/search', ProductController.searchProducts);
+
+// Lọc sản phẩm
+router.get('/products/filter', ProductController.filterProducts);
+
+module.exports = router;

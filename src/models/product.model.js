@@ -7,13 +7,13 @@ const COLLECTION_NAME = 'Products'
 
 // Declare the Schema of the Mongo model
 var productSchema = new Schema({
-    product_id: { type: String, required: true },
-    product_name: { type: String, required: true },
-    product_thumb: { type: String, required: true },
-    product_description: String,
-    product_price: { type: Number, required: true },
-    product_quantity: { type: Number, required: true },
-    product_type: { type: String, required: true }
+
+    name: { type: String, required: true },
+    thumb: { type: String, required: true },
+    description: String,
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true },
+
 }, {
     timestamps: true,
     collection: COLLECTION_NAME
