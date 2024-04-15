@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const ProductController = require('../../controllers/product.controller');
+const multer = require('multer');
 
+// Set storage engine
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 // Tạo sản phẩm mới
 router.post('/products/create', ProductController.createProduct);
 
@@ -23,4 +27,8 @@ router.get('/products/search', ProductController.searchProducts);
 // Lọc sản phẩm
 router.get('/products/filter', ProductController.filterProducts);
 
+//Import File
+router.post('/products/import', upload.single('file'), ProductController.fileUpload)
+//Export File
+router.get('/product/export', ProductController.exportFile)
 module.exports = router;

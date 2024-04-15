@@ -109,6 +109,36 @@ class ProductController {
             next(error);
         }
     }
+
+
+
+    //Import File
+    fileUpload = async (req, res) => {
+        try {
+            const buffer = req.file.buffer;
+            const products = await ProductService.importFile(buffer);
+
+            res.status(200).json({ message: 'Imported successfully', data: products });
+        } catch (error) {
+            res.status(500).json({ message: 'Import failed', error: error.message });
+        }
+    }
+
+
+    //Export File
+    exportFile = async (req, res) => {
+        try {
+            const buffer = await ProductService.exportProductsToExcel();
+
+            // Trả về file Excel cho client
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=products.xlsx');
+            res.send(buffer);
+        } catch (error) {
+            console.error('Export failed:', error);
+            res.status(500).send('Export failed');
+        }
+    }
 }
 
 module.exports = new ProductController();

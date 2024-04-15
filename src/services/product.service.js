@@ -1,5 +1,5 @@
 const productModel = require('../models/product.model');
-
+const exceljs = require('exceljs');
 class ProductService {
 
     // Tạo sản phẩm mới
@@ -236,6 +236,76 @@ class ProductService {
             throw error;
         }
     }
+
+
+    //Import File
+    static importFile = async (buffer) => {
+        const workbook = new exceljs.Workbook();
+        const worksheet = await workbook.xlsx.load(buffer).then(function () {
+            return workbook.getWorksheet(1);
+        });
+
+        const products = [];
+
+        worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+            if (rowNumber !== 1) { // Skip header row
+                const product = {
+                    name: row.getCell(1).value,
+                    thumb: row.getCell(2).value,
+                    description: row.getCell(3).value,
+                    price: row.getCell(4).value,
+                    quantity: row.getCell(5).value
+                };
+                products.push(product);
+            }
+        });
+
+        // Process the imported products (save to database, etc.)
+        // ...
+        for (const productData of products) {
+            const product = new productModel(productData);
+            await product.save();
+        }
+
+        return products;
+    }
+
+    //Export File
+
+    static async exportProductsToExcel() {
+        // Lấy dữ liệu từ database
+        const products = await productModel.find();
+
+        // Tạo workbook và worksheet
+        const workbook = new exceljs.Workbook();
+        const worksheet = workbook.addWorksheet('Products');
+
+        // Tạo header cho worksheet
+        worksheet.columns = [
+            { header: 'Name', key: 'name', width: 20 },
+            { header: 'Thumbnail', key: 'thumb', width: 20 },
+            { header: 'Description', key: 'description', width: 40 },
+            { header: 'Price', key: 'price', width: 15 },
+            { header: 'Quantity', key: 'quantity', width: 15 },
+        ];
+
+        // Thêm dữ liệu vào worksheet từ products
+        products.forEach(product => {
+            worksheet.addRow({
+                name: product.name,
+                thumb: product.thumb,
+                description: product.description,
+                price: product.price,
+                quantity: product.quantity
+            });
+        });
+
+        // Lưu workbook thành file Excel
+        const buffer = await workbook.xlsx.writeBuffer();
+        return buffer;
+    }
+
+
 }
 
 module.exports = ProductService;
