@@ -3,7 +3,7 @@ const exceljs = require('exceljs');
 class ProductService {
 
     // Tạo sản phẩm mới
-    static createNewProduct = async ({ name, thumb, description, price, quantity }) => {
+    static createNewProduct = async ({ name, thumb, description, category_type, product_type, price, quantity }) => {
         try {
             const existProduct = await productModel.findOne({ name });
             if (existProduct) {
@@ -17,6 +17,8 @@ class ProductService {
                 name,
                 thumb,
                 description,
+                category_type,
+                product_type,
                 price,
                 quantity,
             });
@@ -43,87 +45,60 @@ class ProductService {
     }
 
     // Lấy tất cả sản phẩm
-    static getAllProduct = async (limit, page, sort, searchTerm) => {
+    static getAllProduct = async (limit, page, sort, searchTerm, categoryType, productType) => {
         try {
             const totalProduct = await productModel.countDocuments();
 
+            let filterConditions = {};
+
+            // if (categoryType) {
+            //     filterConditions.category_type = categoryType;
+            //     filterConditions.$or = [
+            //         { categoryType: { $regex: regex } },
+
+            //     ];
+            // }
+
+            // if (productType) {
+            //     filterConditions.product_type = productType;
+            //     filterConditions.$or = [
+            //         { productType: { $regex: regex } },
+
+            //     ];
+            // }
+
             if (searchTerm) {
-                // Sử dụng RegExp để tạo một biểu thức chính quy tìm kiếm không phân biệt hoa thường
                 const regex = new RegExp(searchTerm, 'i');
-
-                const allObjectFilter = await productModel.find({
-                    $or: [
-                        { name: { $regex: regex } },
-                        { description: { $regex: regex } },
-                        // Thêm các trường khác cần tìm kiếm ở đây nếu cần
-                    ],
-                })
-                    .limit(limit)
-                    .skip(page * limit)
-                    .sort({ createdAt: -1, updatedAt: -1 });
-
-                return {
-                    status: 'OK',
-                    message: 'Success at Filter',
-                    data: allObjectFilter.map(product => ([
-                        product._id,
-                        product.name,
-                        product.thumb,
-                        product.description,
-                        product.price,
-                        product.quantity
-                    ])),
-                    total: totalProduct,
-                    pageCurrent: Number(page + 1),
-                    totalPage: Math.ceil(totalProduct / limit)
-                };
+                filterConditions.$or = [
+                    { name: { $regex: regex } },
+                    { description: { $regex: regex } }
+                ];
             }
+
+            let query = productModel.find(filterConditions);
 
             if (sort) {
                 const objectSort = {};
                 objectSort[sort[1]] = sort[0];
 
-                const allProductSort = await productModel.find()
-                    .limit(limit)
-                    .skip(page * limit)
-                    .sort(objectSort)
-                    .sort({ createdAt: -1, updatedAt: -1 });
-
-                return {
-                    status: 'OK',
-                    message: 'Success at Sort',
-                    data: allProductSort.map(product => ([
-                        product.name,
-                        product.thumb,
-                        product.description,
-                        product.price,
-                        product.quantity
-                    ])),
-                    total: totalProduct,
-                    pageCurrent: Number(page + 1),
-                    totalPage: Math.ceil(totalProduct / limit)
-                };
-
+                query = query.sort(objectSort);
             }
 
-            let allProduct = [];
-            if (!limit) {
-                allProduct = await productModel.find().sort({ createdAt: -1, updatedAt: -1 });
-            } else {
-                allProduct = await productModel.find()
-                    .limit(limit)
-                    .skip(page * limit)
-                    .sort({ createdAt: -1, updatedAt: -1 });
-            }
+            const allProduct = await query
+                .limit(limit)
+                .skip(page * limit)
+                .sort({ createdAt: -1, updatedAt: -1 });
 
             return {
                 status: 'OK',
-                message: 'Success at normal',
+                message: 'Success',
                 data: allProduct.map(product => ([
                     product._id,
                     product.name,
                     product.thumb,
                     product.description,
+                    product.category_type,
+                    product.product_type,
                     product.price,
                     product.quantity
                 ])),
@@ -131,12 +106,11 @@ class ProductService {
                 pageCurrent: Number(page + 1),
                 totalPage: Math.ceil(totalProduct / limit)
             };
-
-
         } catch (e) {
             throw e;
         }
     }
+
 
     // static getAllProduct = async () => {
     //     try {
@@ -216,26 +190,6 @@ class ProductService {
         }
     }
 
-    // Tìm kiếm sản phẩm
-    static searchProduct = async (query) => {
-        try {
-            const products = await productModel.find({ name: { $regex: query, $options: 'i' } });
-            return products;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Lọc sản phẩm
-    static filterProduct = async (filterData) => {
-        try {
-            // Dựa vào filterData để lọc sản phẩm
-            const filteredProducts = await productModel.find(filterData);
-            return filteredProducts;
-        } catch (error) {
-            throw error;
-        }
-    }
 
 
     //Import File
@@ -253,8 +207,10 @@ class ProductService {
                     name: row.getCell(1).value,
                     thumb: row.getCell(2).value,
                     description: row.getCell(3).value,
-                    price: row.getCell(4).value,
-                    quantity: row.getCell(5).value
+                    category_type: row.getCell(4).value,
+                    product_type: row.getCell(5).value,
+                    price: row.getCell(6).value,
+                    quantity: row.getCell(7).value
                 };
                 products.push(product);
             }
@@ -285,6 +241,8 @@ class ProductService {
             { header: 'Name', key: 'name', width: 20 },
             { header: 'Thumbnail', key: 'thumb', width: 20 },
             { header: 'Description', key: 'description', width: 40 },
+            { header: 'Category Type', key: 'category_type', width: 15 },
+            { header: 'Product Type', key: 'product_type', width: 15 },
             { header: 'Price', key: 'price', width: 15 },
             { header: 'Quantity', key: 'quantity', width: 15 },
         ];
@@ -295,6 +253,8 @@ class ProductService {
                 name: product.name,
                 thumb: product.thumb,
                 description: product.description,
+                category_type: product.category_type,
+                product_type: product.product_type,
                 price: product.price,
                 quantity: product.quantity
             });

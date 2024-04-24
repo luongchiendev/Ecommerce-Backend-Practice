@@ -52,9 +52,9 @@ class ProductController {
     }
     getAllProduct = async (req, res) => {
         try {
-            const { limit, page, sort, filter } = req.query;
+            const { limit, page, sort, search } = req.query;
 
-            const response = await ProductService.getAllProduct(limit, page, sort, filter);
+            const response = await ProductService.getAllProduct(limit, page, sort, search);
 
             return res.status(200).json(response);
 

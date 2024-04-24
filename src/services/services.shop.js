@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const keyTokenService = require('./keyToken.service'); // Import keyTokenService
 const { findByEmail } = require('../utils/findEmail');
 const { sendVerificationEmail } = require('../utils/sendVerifyEmail');
+const { BadRequestError } = require('../core/error.message');
 
 const ROLESHOP = {
     SHOP: 'SHOP',
@@ -16,7 +17,11 @@ const ROLESHOP = {
 class AccessService {
 
 
-
+    static logout = async (keyStore) => {
+        const delKey = await keyTokenService.removeKeyById(keyStore._id)
+        console.log({ delKey })
+        return delKey
+    }
     /*
     -------Login Service------
     1. Check Email
@@ -67,10 +72,11 @@ class AccessService {
 
 
         } catch (error) {
+
             console.log("error", error.message)
         }
 
-        // const {privateKey, publicKey} = 
+
     }
 
 
@@ -79,11 +85,7 @@ class AccessService {
         try {
             const holderShop = await shopModel.findOne({ email });
             if (holderShop) {
-                return {
-                    code: 202,
-                    message: 'Shop already registered!'
-
-                };
+                throw new BadRequestError('Error: Shop Already Registered!')
             }
 
             const hashPassword = await bcrypt.hash(password, 10);
@@ -114,19 +116,19 @@ class AccessService {
                         message: 'publicKeyString error'
                     }
                 }
-
+                console.log(`Key Store: `, keyStore)
                 const tokens = await createTokenPair({ userId: newShop._id, email }, keyStore, privateKey); // Fix typo
 
                 console.log(`Created Token Success:: `, tokens);
                 //Send email 
 
-                const MailSended = await sendVerificationEmail(email);
-                if (MailSended) {
-                    return {
-                        code: 200,
-                        message: "Send mail verify!"
-                    }
-                }
+                // const MailSended = await sendVerificationEmail(email);
+                // if (MailSended) {
+                //     return {
+                //         code: 200,
+                //         message: "Send mail verify!"
+                //     }
+                // }
                 // Return success response
                 return {
                     code: 201, // Created

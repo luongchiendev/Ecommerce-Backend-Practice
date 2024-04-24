@@ -6,16 +6,22 @@ const jwt = require('jsonwebtoken')
 const { apiKey, permission } = require('../auth/checkAuth');
 const shopModel = require("../models/shop.model");
 const { findByEmail } = require("../utils/findEmail");
+const { SuccessResponse } = require('../core/success.message');
+const AccessService = require("../services/services.shop");
 class AccessController {
 
 
 
+    logout = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Logout Success',
+            metadata: await AccessService.logout(req.keyStore)
+        }).send(res)
+    }
+
 
     // Xác minh token khi người dùng nhấp vào liên kết
     // Middleware để xác minh khóa API và quyền truy cập
-
-
-
     // Xác minh token khi người dùng nhấp vào liên kết
     verify = async (req, res, next) => {
         try {

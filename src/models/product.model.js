@@ -11,6 +11,8 @@ var productSchema = new Schema({
     name: { type: String, required: true },
     thumb: { type: String, required: true },
     description: String,
+    category_type: String,
+    product_type: String,
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
 
