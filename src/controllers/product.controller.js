@@ -77,16 +77,6 @@ class ProductController {
         }
     }
 
-    // getProducts = async (req, res, next) => {
-    //     try {
-    //         // Gọi service để lấy danh sách sản phẩm
-    //         // const response = await ProductService.getProducts();
-    //         // return res.status(200).json(response);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
     searchProducts = async (req, res, next) => {
         try {
             const searchTerm = req.query.searchTerm;

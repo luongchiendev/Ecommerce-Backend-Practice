@@ -1,13 +1,12 @@
 
 const AccesService = require("../services/services.shop");
 
-
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken')
-const { apiKey, permission } = require('../auth/checkAuth');
 const shopModel = require("../models/shop.model");
-const { findByEmail } = require("../utils/findEmail");
 const { SuccessResponse } = require('../core/success.message');
 const AccessService = require("../services/services.shop");
+const { findById } = require("../models/apikey.model");
 class AccessController {
 
 
@@ -20,7 +19,6 @@ class AccessController {
     }
 
 
-    // Xác minh token khi người dùng nhấp vào liên kết
     // Middleware để xác minh khóa API và quyền truy cập
     // Xác minh token khi người dùng nhấp vào liên kết
     verify = async (req, res, next) => {
@@ -60,19 +58,6 @@ class AccessController {
         }
     };
 
-
-
-
-
-    // signUp = async (req, res, next) => {
-    //     try {
-    //         console.log(`[P]::signUp::`, req.body)
-    //         return res.status(201).json(await AccesService.signUp(req.body))
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
     signUp = async (req, res, next) => {
         try {
             const { name, email, password } = req.body
@@ -104,18 +89,11 @@ class AccessController {
         }
     }
 
-    // logIn = async (req, res, next) => {
-    //     try {
-    //         console.log(`[P]LogIn::: `, req.body)
-    //         return res.status(201).json(await AccesService.logIn(req.body))
-    //     } catch (error) {
-    //         next(error)
-    //     }
-    // }
-
     logIn = async (req, res) => {
         try {
             const { email, password } = req.body
+
+            // console.log(apikey)
             const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
             const isCheckEmail = reg.test(email)
             if (!email || !password) {
@@ -138,6 +116,12 @@ class AccessController {
                 sameSite: 'strict',
                 path: '/',
             })
+            // res.cookie('x-api-key', apikey, {
+            //     httpOnly: true,
+            //     secure: false,
+            //     sameSite: 'strict',
+            //     path: '/',
+            // })
             return res.status(200).json({ ...newReponse, refresh_token })
         } catch (e) {
             return res.status(400).json({

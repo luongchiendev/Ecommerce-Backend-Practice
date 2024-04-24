@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const ProductController = require('../../controllers/product.controller');
+const { authentication } = require('../../auth/authUtils')
 const multer = require('multer');
 
 // Set storage engine
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+router.use(authentication)
 // Tạo sản phẩm mới
 router.post('/products/create', ProductController.createProduct);
 

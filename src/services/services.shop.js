@@ -9,8 +9,6 @@ const { BadRequestError } = require('../core/error.message');
 
 const ROLESHOP = {
     SHOP: 'SHOP',
-    WRITER: 'WRITER',
-    EDITOR: 'EDITOR',
     ADMIN: 'ADMIN'
 }
 

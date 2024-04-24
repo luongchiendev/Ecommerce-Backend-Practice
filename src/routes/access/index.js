@@ -1,13 +1,11 @@
 const express = require('express')
 
 const accessController = require('../../controllers/access.controller')
-const { apiKey, permission } = require('../../auth/checkAuth')
 const { authentication } = require('../../auth/authUtils')
 const asyncHandler = require('../../helpers/asyncHandler')
 const router = express.Router()
 
-router.use(apiKey)
-router.use(permission('0000'))
+
 
 // signUp
 router.post('/shop/signup', accessController.signUp)
